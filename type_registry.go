@@ -8,6 +8,13 @@ func init() {
 
 }
 
+// AddTypes add multiple types to registry center
+func AddTypes(interfaces []interface{}) {
+	for _, i := range interfaces {
+		AddType(i)
+	}
+}
+
 // AddType add type to registry center
 func AddType(i interface{}) string {
 	var key string
@@ -37,9 +44,35 @@ func RegistryLen() int {
 }
 
 // Make create type by key
+// If type is pointer, Make will create an object, point to it and return none null pointer
 func Make(key string) interface{} {
+	var value reflect.Value
 	if tpe, ok := typeRegistry[key]; ok {
-		return reflect.New(tpe).Elem().Interface()
+		value = reflect.New(tpe).Elem()
+		switch tpe.Kind() {
+		case reflect.Ptr:
+			tValue := reflect.New(tpe.Elem()).Elem().Addr()
+			value.Set(tValue)
+		default:
+		}
+		return value.Interface()
+	}
+
+	return nil
+}
+
+// MakeSlice create slice type by key
+func MakeSlice(key string) interface{} {
+	var value reflect.Value
+	if tpe, ok := typeRegistry[key]; ok {
+		value = reflect.MakeSlice(reflect.SliceOf(tpe), 0, 0)
+		// switch tpe.Kind() {
+		// case reflect.Ptr:
+		// 	tValue := reflect.New(tpe.Elem()).Elem().Addr()
+		// 	value.Set(tValue)
+		// default:
+		// }
+		return value.Interface()
 	}
 
 	return nil

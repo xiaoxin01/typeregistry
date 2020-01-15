@@ -12,7 +12,26 @@ type Student struct {
 	Name string
 }
 
+func TestAddTypes(t *testing.T) {
+	CleanRegistry()
+	t.Run("test add multiple basic types", func(t *testing.T) {
+		types := []interface{}{}
+		types = append(types,
+			1,
+			3.14,
+			new(int),
+		)
+		assert.Equal(t, 0, RegistryLen())
+
+		AddTypes(types)
+
+		assert.Equal(t, 3, len(types))
+		assert.Equal(t, 3, RegistryLen())
+	})
+}
+
 func TestAddType(t *testing.T) {
+	CleanRegistry()
 	t.Run("test add basic types", func(t *testing.T) {
 		intKey := AddType(1)
 		floatKey := AddType(3.14)
@@ -49,6 +68,7 @@ func TestAddType(t *testing.T) {
 }
 
 func TestCleanRegistry(t *testing.T) {
+	CleanRegistry()
 	AddType(1)
 
 	assert.Equal(t, 1, RegistryLen())
@@ -59,6 +79,7 @@ func TestCleanRegistry(t *testing.T) {
 }
 
 func TestMake(t *testing.T) {
+	CleanRegistry()
 	t.Run("test make basic type", func(t *testing.T) {
 		AddType(1)
 		AddType(3.14)
@@ -82,7 +103,7 @@ func TestMake(t *testing.T) {
 		assert.Equal(t, reflect.Struct, reflect.TypeOf(student).Kind())
 		assert.Equal(t, 0, student.(Student).Age)
 		assert.Equal(t, reflect.Ptr, reflect.TypeOf(studentPtr).Kind())
-		//assert.Equal(t, 0.0, studentPtr.(*Student).Age)
+		assert.Equal(t, 0, studentPtr.(*Student).Age)
 	})
 
 	t.Run("test make slice", func(t *testing.T) {
@@ -102,5 +123,33 @@ func TestMake(t *testing.T) {
 		assert.Equal(t, 0, len(structSlice.([]Student)))
 		assert.Equal(t, 0, len(structPtrSlice.([]*Student)))
 
+	})
+}
+
+func TestMakeSlice(t *testing.T) {
+	CleanRegistry()
+	t.Run("test make basic slice type", func(t *testing.T) {
+		AddType(1)
+
+		in := MakeSlice("int")
+
+		assert.Equal(t, reflect.Slice, reflect.TypeOf(in).Kind())
+		assert.Equal(t, 0, len(in.([]int)))
+	})
+
+	t.Run("test make struct slice type", func(t *testing.T) {
+		AddType(Student{})
+		AddType(new(Student))
+
+		students := MakeSlice("typeregistry.Student")
+		studentsPtr := MakeSlice("*typeregistry.Student")
+
+		assert.Equal(t, reflect.Slice, reflect.TypeOf(students).Kind())
+		assert.Equal(t, reflect.Slice, reflect.TypeOf(studentsPtr).Kind())
+
+		_, studentsOk := students.([]Student)
+		_, studentsPtrOk := studentsPtr.([]*Student)
+		assert.Equal(t, true, studentsOk)
+		assert.Equal(t, true, studentsPtrOk)
 	})
 }
