@@ -2,6 +2,7 @@ package typeregistry
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 
 	"gotest.tools/assert"
@@ -67,6 +68,39 @@ func TestAddType(t *testing.T) {
 	})
 }
 
+func TestAddTypeWithKey(t *testing.T) {
+	CleanRegistry()
+	t.Run("test use struct lowercase name for key", func(t *testing.T) {
+		var i interface{} = new(Student)
+		name := AddTypeWithKey(i, func(i interface{}) string {
+			tpe := reflect.TypeOf(i).Elem()
+			return strings.ToLower(tpe.Name())
+		})
+
+		student, ok := Create("student").(*Student)
+
+		assert.Equal(t, "student", name)
+		assert.Equal(t, true, ok)
+		assert.Equal(t, 0, student.Age)
+	})
+}
+
+func TestAddTypesWithKey(t *testing.T) {
+	CleanRegistry()
+	t.Run("test use struct lowercase name for key", func(t *testing.T) {
+		var is []interface{} = []interface{}{new(Student)}
+		AddTypesWithKey(is, func(i interface{}) string {
+			tpe := reflect.TypeOf(i).Elem()
+			return strings.ToLower(tpe.Name())
+		})
+
+		student, ok := Create("student").(*Student)
+
+		assert.Equal(t, true, ok)
+		assert.Equal(t, 0, student.Age)
+	})
+}
+
 func TestCleanRegistry(t *testing.T) {
 	CleanRegistry()
 	AddType(1)
@@ -78,14 +112,14 @@ func TestCleanRegistry(t *testing.T) {
 	assert.Equal(t, 0, RegistryLen())
 }
 
-func TestMake(t *testing.T) {
+func TestCreate(t *testing.T) {
 	CleanRegistry()
 	t.Run("test make basic type", func(t *testing.T) {
 		AddType(1)
 		AddType(3.14)
 
-		in := Make("int")
-		fl := Make("float64")
+		in := Create("int")
+		fl := Create("float64")
 
 		assert.Equal(t, reflect.Int, reflect.TypeOf(in).Kind())
 		assert.Equal(t, 0, in.(int))
@@ -97,8 +131,8 @@ func TestMake(t *testing.T) {
 		AddType(Student{})
 		AddType(new(Student))
 
-		student := Make("typeregistry.Student")
-		studentPtr := Make("*typeregistry.Student")
+		student := Create("typeregistry.Student")
+		studentPtr := Create("*typeregistry.Student")
 
 		assert.Equal(t, reflect.Struct, reflect.TypeOf(student).Kind())
 		assert.Equal(t, 0, student.(Student).Age)
@@ -111,9 +145,9 @@ func TestMake(t *testing.T) {
 		AddType([]Student{})
 		AddType([]*Student{})
 
-		intSlice := Make("[]int")
-		structSlice := Make("[]typeregistry.Student")
-		structPtrSlice := Make("[]*typeregistry.Student")
+		intSlice := Create("[]int")
+		structSlice := Create("[]typeregistry.Student")
+		structPtrSlice := Create("[]*typeregistry.Student")
 
 		assert.Equal(t, reflect.Slice, reflect.TypeOf(intSlice).Kind())
 		assert.Equal(t, reflect.Slice, reflect.TypeOf(structSlice).Kind())
@@ -126,12 +160,12 @@ func TestMake(t *testing.T) {
 	})
 }
 
-func TestMakeSlice(t *testing.T) {
+func TestCreateSlice(t *testing.T) {
 	CleanRegistry()
 	t.Run("test make basic slice type", func(t *testing.T) {
 		AddType(1)
 
-		in := MakeSlice("int")
+		in := CreateSlice("int")
 
 		assert.Equal(t, reflect.Slice, reflect.TypeOf(in).Kind())
 		assert.Equal(t, 0, len(in.([]int)))
@@ -141,8 +175,8 @@ func TestMakeSlice(t *testing.T) {
 		AddType(Student{})
 		AddType(new(Student))
 
-		students := MakeSlice("typeregistry.Student")
-		studentsPtr := MakeSlice("*typeregistry.Student")
+		students := CreateSlice("typeregistry.Student")
+		studentsPtr := CreateSlice("*typeregistry.Student")
 
 		assert.Equal(t, reflect.Slice, reflect.TypeOf(students).Kind())
 		assert.Equal(t, reflect.Slice, reflect.TypeOf(studentsPtr).Kind())
@@ -151,5 +185,22 @@ func TestMakeSlice(t *testing.T) {
 		_, studentsPtrOk := studentsPtr.([]*Student)
 		assert.Equal(t, true, studentsOk)
 		assert.Equal(t, true, studentsPtrOk)
+	})
+}
+
+func TestGetLen(t *testing.T) {
+	t.Run("get len of slice", func(t *testing.T) {
+		intSlice := []int{1, 2, 3}
+		len := GetLen(intSlice)
+
+		assert.Equal(t, 3, len)
+	})
+
+	t.Run("get len of invalid", func(t *testing.T) {
+		nilLen := GetLen(nil)
+		intLen := GetLen(1)
+
+		assert.Equal(t, -1, nilLen)
+		assert.Equal(t, -1, intLen)
 	})
 }

@@ -1,4 +1,4 @@
-module supperxin/typeregistry
+module github.com/xiaoxin01/typeregistry
 
 go 1.13
 
