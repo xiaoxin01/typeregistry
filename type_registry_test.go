@@ -204,3 +204,22 @@ func TestGetLen(t *testing.T) {
 		assert.Equal(t, -1, intLen)
 	})
 }
+
+func BenchmarkMake(b *testing.B) {
+	CleanRegistry()
+	key := AddType([]*Student{})
+	for n := 0; n < b.N; n++ {
+		if Create(key) != nil {
+
+		}
+	}
+}
+
+func BenchmarkCreateDirectly(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		s := new([]*Student)
+		if s != nil {
+
+		}
+	}
+}
