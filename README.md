@@ -1,5 +1,7 @@
 # a library to create type dynamically
 
+[![Build Status](https://travis-ci.org/xiaoxin01/typeregistry.svg?branch=master)](https://travis-ci.org/xiaoxin01/typeregistry)
+
 ## how to use
 
 ```go
