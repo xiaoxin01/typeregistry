@@ -47,7 +47,7 @@ func AddTypeWithKey(i interface{}, keyFunc func(i interface{}) string) string {
 	return key
 }
 
-// CleanRegistry clean registed types
+// CleanRegistry clean registered types
 func CleanRegistry() {
 	if len(typeRegistry) > 0 {
 		typeRegistry = make(map[string]reflect.Type)
