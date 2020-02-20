@@ -1,5 +1,6 @@
 # a library to create type dynamically
 
+[![Report](https://goreportcard.com/badge/github.com/xiaoxin01/typeregistry)](https://goreportcard.com/badge/github.com/xiaoxin01/typeregistry)
 [![Build Status](https://travis-ci.org/xiaoxin01/typeregistry.svg?branch=master)](https://travis-ci.org/xiaoxin01/typeregistry)
 
 ## how to use
@@ -16,6 +17,20 @@ key := AddType(new(Student))
 
 // 3. create struct from registed key
 student := Make(key)
+```
+
+## custom registed key
+
+```go
+var i interface{} = new(Student)
+
+// use lowercase struct name as key
+name := AddTypeWithKey(i, func(i interface{}) string {
+	tpe := reflect.TypeOf(i).Elem()
+	return strings.ToLower(tpe.Name())
+})
+
+student, ok := Create("student").(*Student)
 ```
 
 ## benchmark
